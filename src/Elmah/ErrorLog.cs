@@ -260,6 +260,8 @@ namespace Elmah
             }
         }
 
+        #if ASPNET
+
         /// <summary>
         /// Gets the default error log implementation specified in the 
         /// configuration file, or the in-memory log implemention if
@@ -356,6 +358,8 @@ namespace Elmah
             return Mask.EmptyString(appName, "/");
         }
 
+        #endif
+
         #if ASYNC
 
         static T EndApmizedTask<T>(IAsyncResult asyncResult)
@@ -373,6 +377,6 @@ namespace Elmah
             }
         }
 
-        #endif
+#endif
     }
 }

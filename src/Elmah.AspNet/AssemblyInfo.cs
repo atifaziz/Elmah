@@ -21,21 +21,6 @@
 //
 #endregion
 
-#region Imports
-
-using System.Reflection;
-
-using CLSCompliantAttribute = System.CLSCompliantAttribute;
-using ComVisible = System.Runtime.InteropServices.ComVisibleAttribute;
 using InternalsVisibleToAttribute = System.Runtime.CompilerServices.InternalsVisibleToAttribute;
-
-#endregion
-
-[assembly: AssemblyConfiguration(Elmah.Build.Configuration)]
-
-[assembly: CLSCompliant(true)] 
-[assembly: ComVisible(false)]
-
-[assembly: Elmah.Scc("$Id: AssemblyInfo.cs 923 2011-12-23 22:02:10Z azizatif $")]
 
 [assembly: InternalsVisibleTo("Elmah.Tests")]

@@ -23,6 +23,8 @@
 
 [assembly: Elmah.Scc("$Id: JScriptAssertion.cs 623 2009-05-30 00:46:46Z azizatif $")]
 
+#if JSCRIPT
+
 namespace Elmah.Assertions
 {
     #region Imports
@@ -335,3 +337,5 @@ namespace Elmah.Assertions
         }
     }
 }
+
+#endif // JSCRIPT

@@ -17,6 +17,8 @@
 //
 #endregion
 
+#if NETFX
+
 namespace Elmah
 {
     #region Imports
@@ -214,3 +216,5 @@ namespace Elmah
         }
     }
 }
+
+#endif // NETFX

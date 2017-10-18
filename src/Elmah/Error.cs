@@ -36,6 +36,9 @@ namespace Elmah
     using Mannex;
     using Thread = System.Threading.Thread;
     using NameValueCollection = System.Collections.Specialized.NameValueCollection;
+    #if !ASPNET
+    using HttpContextBase = System.Object;
+    #endif
 
     #endregion
 
@@ -45,7 +48,7 @@ namespace Elmah
     /// </summary>
 
     [ Serializable ]
-    public sealed class Error : ICloneable
+    public sealed partial class Error : ICloneable
     {
         private readonly Exception _exception;
         private string _applicationName;
@@ -114,48 +117,6 @@ namespace Elmah
             _user = Thread.CurrentPrincipal.Identity.Name ?? string.Empty;
             _time = DateTime.Now;
 
-            //
-            // If this is an HTTP exception, then get the status code
-            // and detailed HTML message provided by the host.
-            //
-
-            var httpException = e as HttpException;
-
-            if (httpException != null)
-            {
-                _statusCode = httpException.GetHttpCode();
-                _webHostHtmlMessage = TryGetHtmlErrorMessage(httpException) ?? string.Empty;
-            }
-
-            //
-            // If the HTTP context is available, then capture the
-            // collections that represent the state request as well as
-            // the user.
-            //
-
-            if (context != null)
-            {
-                var webUser = context.User;
-                if (webUser != null 
-                    && (webUser.Identity.Name ?? string.Empty).Length > 0)
-                {
-                    _user = webUser.Identity.Name;
-                }
-
-                var request = context.Request;
-                var qsfc = request.TryGetUnvalidatedCollections((form, qs, cookies) => new
-                {
-                    QueryString = qs,
-                    Form = form, 
-                    Cookies = cookies,
-                });
-
-                _serverVariables = CopyCollection(request.ServerVariables);
-                _queryString = CopyCollection(qsfc.QueryString);
-                _form = CopyCollection(qsfc.Form);
-                _cookies = CopyCollection(qsfc.Cookies);
-            }
-
             var callerInfo = e.TryGetCallerInfo() ?? CallerInfo.Empty;
             if (!callerInfo.IsEmpty)
             {
@@ -163,30 +124,11 @@ namespace Elmah
                         + System.Environment.NewLine
                         + _detail;
             }
+
+            OnInit(e, context);
         }
 
-        private static string TryGetHtmlErrorMessage(HttpException e)
-        {
-            Debug.Assert(e != null);
-
-            try
-            {
-                return e.GetHtmlErrorMessage();
-            }
-            catch (SecurityException se) 
-            {
-                // In partial trust environments, HttpException.GetHtmlErrorMessage() 
-                // has been known to throw:
-                // System.Security.SecurityException: Request for the 
-                // permission of type 'System.Web.AspNetHostingPermission' failed.
-                // 
-                // See issue #179 for more background:
-                // http://code.google.com/p/elmah/issues/detail?id=179
-                
-                Trace.WriteLine(se);
-                return null;
-            }
-        }
+        partial void OnInit(Exception e, HttpContextBase context);
 
         /// <summary>
         /// Gets the <see cref="Exception"/> instance used to initialize this
@@ -393,6 +335,87 @@ namespace Elmah
             return new NameValueCollection(collection);
         }
 
+        private static NameValueCollection FaultIn(ref NameValueCollection collection)
+        {
+            if (collection == null)
+                collection = new NameValueCollection();
+
+            return collection;
+        }
+    }
+
+    #if ASPNET
+
+    partial class Error
+    {
+        partial void OnInit(Exception e, HttpContextBase context)
+        {
+            //
+            // If this is an HTTP exception, then get the status code
+            // and detailed HTML message provided by the host.
+            //
+
+            var httpException = e as HttpException;
+
+            if (httpException != null)
+            {
+                _statusCode = httpException.GetHttpCode();
+                _webHostHtmlMessage = TryGetHtmlErrorMessage(httpException) ?? string.Empty;
+            }
+
+            //
+            // If the HTTP context is available, then capture the
+            // collections that represent the state request as well as
+            // the user.
+            //
+
+            if (context != null)
+            {
+                var webUser = context.User;
+                if (webUser != null 
+                    && (webUser.Identity.Name ?? string.Empty).Length > 0)
+                {
+                    _user = webUser.Identity.Name;
+                }
+
+                var request = context.Request;
+                var qsfc = request.TryGetUnvalidatedCollections((form, qs, cookies) => new
+                {
+                    QueryString = qs,
+                    Form = form, 
+                    Cookies = cookies,
+                });
+
+                _serverVariables = CopyCollection(request.ServerVariables);
+                _queryString = CopyCollection(qsfc.QueryString);
+                _form = CopyCollection(qsfc.Form);
+                _cookies = CopyCollection(qsfc.Cookies);
+            }
+        }
+
+        private static string TryGetHtmlErrorMessage(HttpException e)
+        {
+            Debug.Assert(e != null);
+
+            try
+            {
+                return e.GetHtmlErrorMessage();
+            }
+            catch (SecurityException se) 
+            {
+                // In partial trust environments, HttpException.GetHtmlErrorMessage() 
+                // has been known to throw:
+                // System.Security.SecurityException: Request for the 
+                // permission of type 'System.Web.AspNetHostingPermission' failed.
+                // 
+                // See issue #179 for more background:
+                // http://code.google.com/p/elmah/issues/detail?id=179
+                
+                Trace.WriteLine(se);
+                return null;
+            }
+        }
+
         private static NameValueCollection CopyCollection(HttpCookieCollection cookies)
         {
             if (cookies == null || cookies.Count == 0)
@@ -414,13 +437,7 @@ namespace Elmah
 
             return copy;
         }
-
-        private static NameValueCollection FaultIn(ref NameValueCollection collection)
-        {
-            if (collection == null)
-                collection = new NameValueCollection();
-
-            return collection;
-        }
     }
+
+    #endif // ASPNET
 }

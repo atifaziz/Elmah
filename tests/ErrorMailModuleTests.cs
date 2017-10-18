@@ -21,6 +21,8 @@
 //
 #endregion
 
+#if ASPNET
+
 namespace Elmah.Tests
 {
     extern alias e;
@@ -83,3 +85,5 @@ namespace Elmah.Tests
         }
     }
 }
+
+#endif

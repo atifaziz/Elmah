@@ -24,11 +24,12 @@
 namespace Elmah.Tests
 {
     extern alias e;
+    extern alias m;
 
     #region Imports
 
     using System.Linq;
-    using MoreLinq;
+    using m::MoreLinq;
     using Xunit;
     using e::Elmah;
 

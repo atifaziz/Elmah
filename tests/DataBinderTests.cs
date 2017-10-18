@@ -21,6 +21,8 @@
 //
 #endregion
 
+#if ASPNET
+
 namespace Elmah.Tests
 {
     #region
@@ -106,3 +108,5 @@ namespace Elmah.Tests
         }
     }
 }
+
+#endif

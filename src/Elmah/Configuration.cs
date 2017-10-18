@@ -23,6 +23,8 @@
 
 [assembly: Elmah.Scc("$Id: Configuration.cs 607 2009-05-27 23:47:10Z azizatif $")]
 
+#if NETFX
+
 namespace Elmah
 {
     #region Imports
@@ -47,3 +49,5 @@ namespace Elmah
         }
     }
 }
+
+#endif // NETFX

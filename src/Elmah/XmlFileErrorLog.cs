@@ -89,8 +89,14 @@ namespace Elmah
         [ MethodImpl(MethodImplOptions.NoInlining) ]
         private static string MapPath(string path) 
         {
+            #if NETFX
             return System.Web.Hosting.HostingEnvironment.MapPath(path);
+            #else
+            // TODO address NotSupportedException
+            throw new NotSupportedException();
+            #endif // NETFX
         }
+
 
         /// <summary>
         /// Initializes a new instance of the <see cref="XmlFileErrorLog"/> class

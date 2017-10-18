@@ -141,6 +141,8 @@ namespace Elmah.Assertions
             return new RegexMatchAssertion(binding, new Regex(pattern, options));
         }
 
+        #if JSCRIPT
+
         public static IAssertion assert_jscript(XmlElement config)
         {
             if (config == null) throw new ArgumentNullException("config");
@@ -170,6 +172,8 @@ namespace Elmah.Assertions
                 DeserializeStringArray(config, "assemblies", "assembly", "name"),
                 DeserializeStringArray(config, "imports", "import", "namespace"));
         }
+
+        #endif
 
         public static IAssertion Create(XmlElement config)
         {

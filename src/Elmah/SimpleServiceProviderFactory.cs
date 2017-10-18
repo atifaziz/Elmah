@@ -21,6 +21,8 @@
 //
 #endregion
 
+#if NETFX
+
 [assembly: Elmah.Scc("$Id: SimpleServiceProviderFactory.cs 641 2009-06-01 17:38:40Z azizatif $")]
 
 namespace Elmah
@@ -80,3 +82,5 @@ namespace Elmah
         }
     }
 }
+
+#endif // NETFX
